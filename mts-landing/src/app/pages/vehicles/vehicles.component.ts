@@ -175,7 +175,10 @@ import { VehicleService, Vehicle } from '../../Services/vehicle.service';
 
                       <div class="flex gap-3">
                         <a [routerLink]="['/vehicles', v.id]" class="flex-1 text-center py-3 rounded-full border border-mts-navy text-mts-navy font-accent font-semibold text-sm hover:bg-mts-surface transition-colors">View Details</a>
-                        <a routerLink="/booking" class="flex-1 text-center py-3 rounded-full bg-mts-navy text-white font-accent font-semibold text-sm hover:bg-mts-blue transition-colors">Rent Now</a>
+                        <a [routerLink]="['/booking']"
+                        [queryParams]="{ vehicleId: v.id }"
+                        class="flex-1 text-center py-3 rounded-full bg-mts-navy text-white font-accent font-semibold text-sm hover:bg-mts-blue transition-colors"
+                      >Rent Now</a>
                       </div>
                     </div>
                   </article>

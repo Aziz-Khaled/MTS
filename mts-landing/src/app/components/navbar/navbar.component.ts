@@ -1,10 +1,12 @@
 import { Component, HostListener, Input } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { RouterLink, Router } from '@angular/router';
+import { AsyncPipe } from '@angular/common';
+import { AuthService } from '../../Services/auth.service';
 
 @Component({
   selector: 'mts-navbar',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, AsyncPipe],
   template: `
     <nav
       class="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
@@ -40,22 +42,49 @@ import { RouterLink } from '@angular/router';
           </div>
 
           <div class="hidden lg:flex items-center gap-3">
-            <a
-              routerLink="/login"
-              class="font-accent font-medium text-sm px-4 py-2 transition-colors duration-300 hover:text-mts-blue"
-              [class.text-mts-black]="isSolid"
-              [class.text-white]="!isSolid"
-            >Login</a>
-            <a
-              routerLink="/register"
-              class="font-accent font-medium text-sm px-4 py-2 rounded-full border transition-colors duration-300"
-              [class.text-mts-black]="isSolid"
-              [class.border-mts-black]="isSolid"
-              [class.text-white]="!isSolid"
-              [class.border-white]="!isSolid"
-            >Register</a>
-            @if (showBookButton) {
-              <a routerLink="/booking" class="btn-primary !px-6 !py-3 text-sm">Book a Car</a>
+            @if (authService.currentUser$ | async; as user) {
+              <span
+                class="w-8 h-8 rounded-full bg-mts-navy text-white flex items-center justify-center text-xs font-semibold flex-shrink-0"
+              >{{ user.firstName.charAt(0) }}{{ user.lastName.charAt(0) }}</span>
+
+              <span
+                class="font-accent font-medium text-sm transition-colors duration-300"
+                [class.text-mts-black]="isSolid"
+                [class.text-white]="!isSolid"
+              >{{ user.firstName }} {{ user.lastName }}</span>
+
+              @if (user.role === 'ADMIN') {
+                <a
+                  routerLink="/admin"
+                  class="font-accent font-medium text-sm px-4 py-2 transition-colors duration-300 hover:text-mts-blue"
+                  [class.text-mts-black]="isSolid"
+                  [class.text-white]="!isSolid"
+                >Dashboard</a>
+              }
+
+              <button
+                type="button"
+                (click)="logout()"
+                class="font-accent font-medium text-sm px-4 py-2 rounded-full border border-red-400 text-red-500 hover:bg-red-500 hover:text-white transition-colors duration-300"
+              >Log Out</button>
+            } @else {
+              <a
+                routerLink="/login"
+                class="font-accent font-medium text-sm px-4 py-2 transition-colors duration-300 hover:text-mts-blue"
+                [class.text-mts-black]="isSolid"
+                [class.text-white]="!isSolid"
+              >Login</a>
+              <a
+                routerLink="/register"
+                class="font-accent font-medium text-sm px-4 py-2 rounded-full border transition-colors duration-300"
+                [class.text-mts-black]="isSolid"
+                [class.border-mts-black]="isSolid"
+                [class.text-white]="!isSolid"
+                [class.border-white]="!isSolid"
+              >Register</a>
+              @if (showBookButton) {
+                <a routerLink="/booking" class="btn-primary !px-6 !py-3 text-sm">Book a Car</a>
+              }
             }
           </div>
 
@@ -88,10 +117,23 @@ import { RouterLink } from '@angular/router';
             }
           </div>
           <div class="flex flex-col gap-3 mt-5">
-            <a routerLink="/login" (click)="mobileOpen = false" class="text-center py-3 font-accent font-medium text-mts-black border border-mts-black rounded-full">Login</a>
-            <a routerLink="/register" (click)="mobileOpen = false" class="text-center py-3 font-accent font-medium text-mts-black border border-mts-black rounded-full">Register</a>
-            @if (showBookButton) {
-              <a routerLink="/booking" (click)="mobileOpen = false" class="btn-primary text-center">Book a Car</a>
+            @if (authService.currentUser$ | async; as user) {
+              <div class="flex items-center gap-3 py-2">
+                <span class="w-9 h-9 rounded-full bg-mts-navy text-white flex items-center justify-center text-xs font-semibold flex-shrink-0">
+                  {{ user.firstName.charAt(0) }}{{ user.lastName.charAt(0) }}
+                </span>
+                <span class="font-accent font-medium text-sm text-mts-black">{{ user.firstName }} {{ user.lastName }}</span>
+              </div>
+              @if (user.role === 'ADMIN') {
+                <a routerLink="/admin" (click)="mobileOpen = false" class="text-center py-3 font-accent font-medium text-mts-black border border-mts-black rounded-full">Dashboard</a>
+              }
+              <button type="button" (click)="logout()" class="text-center py-3 font-accent font-medium text-red-600 border border-red-200 rounded-full">Log Out</button>
+            } @else {
+              <a routerLink="/login" (click)="mobileOpen = false" class="text-center py-3 font-accent font-medium text-mts-black border border-mts-black rounded-full">Login</a>
+              <a routerLink="/register" (click)="mobileOpen = false" class="text-center py-3 font-accent font-medium text-mts-black border border-mts-black rounded-full">Register</a>
+              @if (showBookButton) {
+                <a routerLink="/booking" (click)="mobileOpen = false" class="btn-primary text-center">Book a Car</a>
+              }
             }
           </div>
         </div>
@@ -109,14 +151,21 @@ export class NavbarComponent {
     return this.alwaysSolid || this.scrolled;
   }
 
-  navLinks = [
-    { label: 'Home', route: '/' },
-    { label: 'Vehicles', route: '/vehicles' },
-    { label: 'Categories', route: '/vehicles', fragment: 'categories' },
-    { label: 'About', route: '/', fragment: 'why-choose' },
-    { label: 'Services', route: '/', fragment: 'why-choose' },
-    { label: 'Contact', route: '/contact' },
-  ];
+ navLinks = [
+  { label: 'Home', route: '/' },
+  { label: 'Vehicles', route: '/vehicles' },
+  { label: 'About', route: '/about' },
+  { label: 'Services', route: '/services' },
+  { label: 'Contact', route: '/contact' },
+];
+
+  constructor(public authService: AuthService, private router: Router) {}
+
+  logout(): void {
+    this.authService.logout();
+    this.mobileOpen = false;
+    this.router.navigateByUrl('/');
+  }
 
   @HostListener('window:scroll')
   onScroll(): void {

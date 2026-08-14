@@ -1,7 +1,6 @@
 package com.mts.backend.Domain.Models;
 
-
-
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -9,11 +8,16 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
 
+@Entity
+@Table(name = "reservations")
 @Getter
 @Setter
 public class Reservation {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
+
     private UUID vehicleId;
     private UUID customerId;
     private UUID pickupAgencyId;
@@ -21,6 +25,8 @@ public class Reservation {
     private LocalDate pickupDate;
     private LocalDate returnDate;
     private BigDecimal totalPrice;
+
+    @Enumerated(EnumType.STRING)
     private ReservationStatus status;
 
     public Reservation() {
@@ -39,7 +45,6 @@ public class Reservation {
         this.status = status;
     }
 
-    /** Business rule: return date must be strictly after pickup date. */
     public boolean hasValidDateRange() {
         return pickupDate != null && returnDate != null && returnDate.isAfter(pickupDate);
     }
@@ -51,7 +56,6 @@ public class Reservation {
         return java.time.temporal.ChronoUnit.DAYS.between(pickupDate, returnDate);
     }
 
-    /** Domain state machine: which transitions are legal from the current status. */
     public void confirm() {
         requireStatus(ReservationStatus.PENDING);
         this.status = ReservationStatus.CONFIRMED;
@@ -74,5 +78,4 @@ public class Reservation {
             throw new IllegalStateException("Expected status " + expected + " but was " + this.status);
         }
     }
-
 }
