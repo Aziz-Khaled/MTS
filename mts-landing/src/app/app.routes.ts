@@ -14,6 +14,8 @@ import { AdminVehiclesComponent } from './pages/admin-vehicles/admin-vehicles.co
 import { AdminOverviewComponent } from './pages/admin-overview/admin-overview.component';
 import { adminGuard } from './guards/auth.guard.spec';
 import { AdminLayoutComponent } from './pages/admin-layout/admin-layout.component';
+import { AdminReservationsComponent } from './pages/admin/admin-reservations/admin-reservations.component';
+import { AdminMessagesComponent } from './pages/admin/admin-messages/admin-messages.component';
 
 export const routes: Routes = [
   { path: '', component: LandingComponent, title: 'MTS | Mobility & Transportation Services' },
@@ -33,6 +35,9 @@ export const routes: Routes = [
     { path: '', redirectTo: 'overview', pathMatch: 'full' },
     { path: 'overview', component: AdminOverviewComponent, title: 'Overview | MTS Admin' },
     { path: 'vehicles', component: AdminVehiclesComponent, title: 'Vehicles | MTS Admin' },
+    { path: 'reservations', component: AdminReservationsComponent, title: 'Reservations | MTS Admin' },
+    { path: 'messages', component: AdminMessagesComponent, title: 'Messages | MTS Admin' },
+
   ],
 },
   { path: '**', redirectTo: '' },

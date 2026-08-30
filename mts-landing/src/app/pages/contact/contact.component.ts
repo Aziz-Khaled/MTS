@@ -1,7 +1,22 @@
-import { Component } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import * as L from 'leaflet';
 import { NavbarComponent } from '../../components/navbar/navbar.component';
 import { FooterComponent } from '../../components/footer/footer.component';
+import { ContactService } from '../../Services/contact.service';
+
+// Fix Leaflet's default marker icon paths, which break under most bundlers
+// (including Angular's) because the default icon URLs are resolved relative
+// to the leaflet package itself rather than the built output.
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+});
+
+// MTS main branch coordinates (Tunis, Tunisia)
+const BRANCH_COORDS: [number, number] = [36.8065, 10.1815];
 
 @Component({
   selector: 'mts-contact',
@@ -80,10 +95,10 @@ import { FooterComponent } from '../../components/footer/footer.component';
                   <span class="text-xs font-accent font-semibold text-mts-steel uppercase tracking-wide">Subject</span>
                   <select required [(ngModel)]="subject" name="subject" class="border border-mts-surface bg-mts-surface rounded-xl px-4 py-3 text-sm outline-none focus:border-mts-blue transition-colors">
                     <option value="" disabled selected>Select a topic</option>
-                    <option value="booking">Booking Question</option>
-                    <option value="corporate">Corporate Rental</option>
-                    <option value="support">Support / Issue</option>
-                    <option value="other">Other</option>
+                    <option value="Booking Question">Booking Question</option>
+                    <option value="Corporate Rental">Corporate Rental</option>
+                    <option value="Support / Issue">Support / Issue</option>
+                    <option value="Other">Other</option>
                   </select>
                 </label>
 
@@ -92,16 +107,20 @@ import { FooterComponent } from '../../components/footer/footer.component';
                   <textarea required [(ngModel)]="message" name="message" rows="5" class="border border-mts-surface bg-mts-surface rounded-xl px-4 py-3 text-sm outline-none focus:border-mts-blue transition-colors resize-none"></textarea>
                 </label>
 
-                <button type="submit" class="btn-primary w-full mt-2">Send Message</button>
+                @if (submitError) {
+                  <p class="text-sm text-red-600">{{ submitError }}</p>
+                }
+
+                <button type="submit" [disabled]="submitting" class="btn-primary w-full mt-2 disabled:opacity-50">
+                  {{ submitting ? 'Sending...' : 'Send Message' }}
+                </button>
               </form>
             }
           </div>
 
-          <!-- Map placeholder + hours -->
+          <!-- Map + hours -->
           <div class="flex flex-col gap-6">
-            <div class="rounded-card overflow-hidden shadow-soft h-64 bg-mts-surface flex items-center justify-center">
-              <p class="text-mts-steel text-sm">Map coming soon</p>
-            </div>
+            <div #mapContainer class="rounded-card overflow-hidden shadow-soft h-64 bg-mts-surface"></div>
 
             <div class="card-surface border border-mts-surface p-7">
               <h3 class="font-accent font-semibold text-sm text-mts-black mb-4 uppercase tracking-wide">Business Hours</h3>
@@ -128,17 +147,56 @@ import { FooterComponent } from '../../components/footer/footer.component';
     <mts-footer></mts-footer>
   `,
 })
-export class ContactComponent {
+export class ContactComponent implements AfterViewInit {
+  @ViewChild('mapContainer') mapContainer!: ElementRef<HTMLDivElement>;
+
   name = '';
   email = '';
   subject = '';
   message = '';
   submitted = false;
+  submitting = false;
+  submitError = '';
+
+  constructor(private contactService: ContactService) {}
+
+  ngAfterViewInit(): void {
+    const map = L.map(this.mapContainer.nativeElement, {
+      scrollWheelZoom: false,
+    }).setView(BRANCH_COORDS, 14);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors',
+      maxZoom: 19,
+    }).addTo(map);
+
+    L.marker(BRANCH_COORDS)
+      .addTo(map)
+      .bindPopup('<strong>MTS Main Branch</strong><br>Tunis, Tunisia')
+      .openPopup();
+  }
 
   submit(event: Event): void {
     event.preventDefault();
-    // TODO: wire to a real backend endpoint (e.g. POST /api/contact) once built.
-    // For now this just confirms submission client-side.
-    this.submitted = true;
+    this.submitting = true;
+    this.submitError = '';
+
+    this.contactService
+      .send({
+        name: this.name,
+        email: this.email,
+        subject: this.subject,
+        message: this.message,
+      })
+      .subscribe({
+        next: () => {
+          this.submitting = false;
+          this.submitted = true;
+        },
+        error: () => {
+          this.submitting = false;
+          this.submitError = 'Something went wrong sending your message. Please try again.';
+        },
+      });
   }
 }

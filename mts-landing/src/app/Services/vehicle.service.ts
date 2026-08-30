@@ -31,6 +31,7 @@ export interface VehiclePayload {
   vin: string;
   registrationNumber: string;
   dailyPrice: number;
+  status: string;   
   agencyId: string;
   imageUrl: string[];
 }

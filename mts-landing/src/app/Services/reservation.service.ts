@@ -18,8 +18,8 @@ export interface ReservationRequest {
   vehicleId: string;
   pickupAgencyId: string;
   returnAgencyId: string;
-  pickupDate: string; // yyyy-MM-dd
-  returnDate: string; // yyyy-MM-dd
+  pickupDate: string; 
+  returnDate: string; 
 }
 
 @Injectable({ providedIn: 'root' })
@@ -42,6 +42,18 @@ export class ReservationService {
 
   getById(id: string): Observable<Reservation> {
     return this.http.get<Reservation>(`${this.baseUrl}/${id}`);
+  }
+
+  confirm(id: string): Observable<Reservation> {
+    return this.http.put<Reservation>(`${this.baseUrl}/${id}/confirm`, {});
+  }
+
+  startRental(id: string): Observable<Reservation> {
+    return this.http.put<Reservation>(`${this.baseUrl}/${id}/start`, {});
+  }
+
+  complete(id: string): Observable<Reservation> {
+    return this.http.put<Reservation>(`${this.baseUrl}/${id}/complete`, {});
   }
 
   cancel(id: string): Observable<Reservation> {

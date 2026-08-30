@@ -15,6 +15,7 @@ const EMPTY_FORM: FormState = {
   vin: '',
   registrationNumber: '',
   dailyPrice: 0,
+  status: 'AVAILABLE',
   agencyId: '00000000-0000-0000-0000-000000000000',
   imageUrl: [],
 };
@@ -160,6 +161,17 @@ const EMPTY_FORM: FormState = {
               <input type="text" required [(ngModel)]="form.registrationNumber" name="registrationNumber" class="border border-mts-surface bg-mts-surface rounded-xl px-4 py-2.5 text-sm outline-none focus:border-mts-blue" />
             </label>
 
+            @if (editingId) {
+  <label class="flex flex-col gap-2 sm:col-span-2">
+    <span class="text-xs font-accent font-semibold text-mts-steel uppercase tracking-wide">Status</span>
+    <select required [(ngModel)]="form.status" name="status" class="border border-mts-surface bg-mts-surface rounded-xl px-4 py-2.5 text-sm outline-none focus:border-mts-blue">
+      <option value="AVAILABLE">Available</option>
+      <option value="RESERVED">Reserved</option>
+      <option value="MAINTENANCE">Maintenance</option>
+      <option value="OUT_OF_SERVICE">Out of Service</option>
+    </select>
+  </label>
+}
             @if (formError) {
               <p class="sm:col-span-2 text-sm text-red-600">{{ formError }}</p>
             }
@@ -233,24 +245,25 @@ export class AdminVehiclesComponent implements OnInit {
   }
 
   openEdit(v: Vehicle): void {
-    this.editingId = v.id;
-    this.form = {
-      brand: v.brand,
-      model: v.model,
-      year: v.year,
-      category: v.category,
-      transmission: v.transmission,
-      fuel: v.fuel,
-      seats: v.seats,
-      vin: v.vin,
-      registrationNumber: v.registrationNumber,
-      dailyPrice: v.dailyPrice,
-      agencyId: v.agencyId,
-      imageUrl: v.imageUrl,
-    };
-    this.formError = '';
-    this.modalOpen = true;
-  }
+  this.editingId = v.id;
+  this.form = {
+    brand: v.brand,
+    model: v.model,
+    year: v.year,
+    category: v.category,
+    transmission: v.transmission,
+    fuel: v.fuel,
+    seats: v.seats,
+    vin: v.vin,
+    registrationNumber: v.registrationNumber,
+    dailyPrice: v.dailyPrice,
+    status: v.status,
+    agencyId: v.agencyId,
+    imageUrl: v.imageUrl,
+  };
+  this.formError = '';
+  this.modalOpen = true;
+}
 
   closeModal(): void {
     this.modalOpen = false;

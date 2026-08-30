@@ -78,4 +78,9 @@ public class Reservation {
             throw new IllegalStateException("Expected status " + expected + " but was " + this.status);
         }
     }
+
+    public void startRental() {
+        requireStatus(ReservationStatus.CONFIRMED);
+        this.status = ReservationStatus.ACTIVE;
+    }
 }

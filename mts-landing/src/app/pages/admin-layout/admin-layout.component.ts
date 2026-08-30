@@ -32,6 +32,24 @@ import { AuthService } from '../../Services/auth.service';
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 21V9l4-5h6l4 5v12"/><path d="M9 21v-5h6v5"/></svg>
             Vehicles
           </a>
+          <a
+            routerLink="/admin/reservations"
+            routerLinkActive="bg-mts-navy text-white"
+            class="flex items-center gap-3 px-4 py-3 rounded-xl text-white/70 font-accent font-medium text-sm hover:bg-white/5 transition-colors"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 10h-6a2 2 0 0 1-2-2V2"/><path d="M3 14h6a2 2 0 0 1 2 2v6"/><path d="M21 14v6a2 2 0 0 1-2 2h-6"/><path d="M3 10V4a2 2 0 0 1 2-2h6"/></svg>
+            Reservations
+          </a>
+
+
+          <a
+            routerLink="/admin/messages"
+            routerLinkActive="bg-mts-navy text-white"
+            class="flex items-center gap-3 px-4 py-3 rounded-xl text-white/70 font-accent font-medium text-sm hover:bg-white/5 transition-colors"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
+            Messages
+          </a>
         </nav>
 
         <div class="px-4 py-6 border-t border-white/10">

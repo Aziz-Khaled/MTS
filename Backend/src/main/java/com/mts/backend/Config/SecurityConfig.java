@@ -55,6 +55,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/reservations").hasAnyRole("USER", "ADMIN")
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/reservations").hasRole("ADMIN")
                         .requestMatchers("/api/reservations/*/confirm", "/api/reservations/*/complete").hasRole("ADMIN")
+                        .requestMatchers("/api/customers/**").hasRole("ADMIN")
+                        .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/contact").permitAll()
+                        .requestMatchers("/api/contact/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

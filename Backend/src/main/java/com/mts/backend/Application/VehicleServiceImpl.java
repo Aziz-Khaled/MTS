@@ -70,6 +70,7 @@ public class VehicleServiceImpl implements VehicleService {
         existing.setRegistrationNumber(updated.getRegistrationNumber());
         existing.setDailyPrice(updated.getDailyPrice());
         existing.setAgencyId(updated.getAgencyId());
+        existing.setStatus(updated.getStatus());
         return repository.save(existing);
     }
 

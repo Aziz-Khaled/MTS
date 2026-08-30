@@ -25,6 +25,14 @@ public class ReservationServiceImpl implements ReservationService {
             ReservationStatus.ACTIVE
     );
 
+    // Statuses where the vehicle has already been claimed by this reservation
+    // (used to decide whether cancelling should release the vehicle back)
+    private static final List<ReservationStatus> VEHICLE_CLAIMED_STATUSES = List.of(
+            ReservationStatus.CONFIRMED,
+            ReservationStatus.IN_PREPARATION,
+            ReservationStatus.ACTIVE
+    );
+
     private final ReservationRepository reservationRepository;
     private final VehicleRepository vehicleRepository;
     private final CurrentUserService currentUserService;
@@ -43,6 +51,12 @@ public class ReservationServiceImpl implements ReservationService {
 
         Vehicle vehicle = vehicleRepository.findById(vehicleId)
                 .orElseThrow(() -> new IllegalArgumentException("Vehicle not found: " + vehicleId));
+
+        if (!vehicle.isBookable()) {
+            throw new VehicleUnavailableException(
+                    "This vehicle is not currently available for booking (status: " + vehicle.getStatus() + ")"
+            );
+        }
 
         Reservation reservation = new Reservation();
         reservation.setVehicleId(vehicleId);
@@ -96,20 +110,56 @@ public class ReservationServiceImpl implements ReservationService {
     public Reservation confirm(UUID id) {
         Reservation reservation = getById(id);
         reservation.confirm();
-        return reservationRepository.save(reservation);
+        reservationRepository.save(reservation);
+
+        Vehicle vehicle = getVehicleOrThrow(reservation.getVehicleId());
+        vehicle.markAsReserved();
+        vehicleRepository.save(vehicle);
+
+        return reservation;
+    }
+
+    @Override
+    public Reservation startRental(UUID id) {
+        Reservation reservation = getById(id);
+        reservation.startRental();
+        reservationRepository.save(reservation);
+        // Vehicle is already RESERVED since confirm() — no status change needed here.
+        return reservation;
     }
 
     @Override
     public Reservation cancel(UUID id) {
         Reservation reservation = getById(id);
+        boolean vehicleWasClaimed = VEHICLE_CLAIMED_STATUSES.contains(reservation.getStatus());
+
         reservation.cancel();
-        return reservationRepository.save(reservation);
+        reservationRepository.save(reservation);
+
+        if (vehicleWasClaimed) {
+            Vehicle vehicle = getVehicleOrThrow(reservation.getVehicleId());
+            vehicle.markAsAvailable();
+            vehicleRepository.save(vehicle);
+        }
+
+        return reservation;
     }
 
     @Override
     public Reservation complete(UUID id) {
         Reservation reservation = getById(id);
         reservation.complete();
-        return reservationRepository.save(reservation);
+        reservationRepository.save(reservation);
+
+        Vehicle vehicle = getVehicleOrThrow(reservation.getVehicleId());
+        vehicle.markAsAvailable();
+        vehicleRepository.save(vehicle);
+
+        return reservation;
+    }
+
+    private Vehicle getVehicleOrThrow(UUID vehicleId) {
+        return vehicleRepository.findById(vehicleId)
+                .orElseThrow(() -> new IllegalStateException("Vehicle not found: " + vehicleId));
     }
 }

@@ -59,4 +59,11 @@ public class ReservationController {
     public ResponseEntity<Reservation> complete(@PathVariable UUID id) {
         return ResponseEntity.ok(service.complete(id));
     }
+
+
+    @PutMapping("/{id}/start")
+    public ResponseEntity<Reservation> startRental(@PathVariable UUID id) {
+        return ResponseEntity.ok(service.startRental(id));
+    }
+
 }
