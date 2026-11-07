@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -33,5 +34,9 @@ public interface ReservationRepository extends JpaRepository<Reservation, UUID> 
             @Param("pickupDate") LocalDate pickupDate,
             @Param("returnDate") LocalDate returnDate,
             @Param("activeStatuses") List<ReservationStatus> activeStatuses
+    );
+
+    List<Reservation> findAllByStatusAndDepositPaidFalseAndPaymentDeadlineBefore(
+            ReservationStatus status, LocalDateTime cutoff
     );
 }

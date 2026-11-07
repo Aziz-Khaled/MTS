@@ -7,6 +7,7 @@ import com.mts.backend.Domain.Exceptions.VehicleUnavailableException;
 import com.mts.backend.Domain.Models.*;
 import com.mts.backend.Domain.Repository.ReservationRepository;
 import com.mts.backend.Domain.Repository.VehicleRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,12 +19,20 @@ import java.util.UUID;
 @Transactional
 public class ReservationServiceImpl implements ReservationService {
 
+    @Value("${reservation.deposit-percentage}")
+    private java.math.BigDecimal depositPercentage;
+
+    @Value("${reservation.payment-window-hours}")
+    private long paymentWindowHours;
+
     private static final List<ReservationStatus> ACTIVE_STATUSES = List.of(
             ReservationStatus.PENDING,
             ReservationStatus.CONFIRMED,
             ReservationStatus.IN_PREPARATION,
             ReservationStatus.ACTIVE
     );
+
+
 
     // Statuses where the vehicle has already been claimed by this reservation
     // (used to decide whether cancelling should release the vehicle back)
@@ -83,6 +92,11 @@ public class ReservationServiceImpl implements ReservationService {
         long days = reservation.durationInDays();
         reservation.setTotalPrice(vehicle.getDailyPrice().multiply(java.math.BigDecimal.valueOf(days)));
 
+        reservation.setDepositAmount(
+                reservation.getTotalPrice().multiply(depositPercentage).setScale(2, java.math.RoundingMode.HALF_UP)
+        );
+        reservation.setPaymentDeadline(java.time.LocalDateTime.now().plusHours(paymentWindowHours));
+        reservation.setDepositPaid(false);
         return reservationRepository.save(reservation);
     }
 

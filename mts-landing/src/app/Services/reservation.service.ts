@@ -12,14 +12,18 @@ export interface Reservation {
   returnDate: string;
   totalPrice: number;
   status: 'PENDING' | 'CONFIRMED' | 'IN_PREPARATION' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED';
+  depositAmount: number;
+  depositPaid: boolean;
+  paymentDeadline: string;
+  stripePaymentIntentId: string | null;
 }
 
 export interface ReservationRequest {
   vehicleId: string;
   pickupAgencyId: string;
   returnAgencyId: string;
-  pickupDate: string; 
-  returnDate: string; 
+  pickupDate: string; // yyyy-MM-dd
+  returnDate: string; // yyyy-MM-dd
 }
 
 @Injectable({ providedIn: 'root' })

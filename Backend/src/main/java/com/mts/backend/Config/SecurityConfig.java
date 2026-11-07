@@ -58,6 +58,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/customers/**").hasRole("ADMIN")
                         .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/contact").permitAll()
                         .requestMatchers("/api/contact/**").hasRole("ADMIN")
+                        .requestMatchers("/api/payments/webhook").permitAll()
+                        .requestMatchers("/api/payments/**").hasAnyRole("USER", "ADMIN")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

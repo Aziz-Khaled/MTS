@@ -6,6 +6,7 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -28,6 +29,12 @@ public class Reservation {
 
     @Enumerated(EnumType.STRING)
     private ReservationStatus status;
+
+    // Payment tracking
+    private BigDecimal depositAmount;
+    private boolean depositPaid;
+    private LocalDateTime paymentDeadline;
+    private String stripePaymentIntentId;
 
     public Reservation() {
     }
@@ -61,6 +68,11 @@ public class Reservation {
         this.status = ReservationStatus.CONFIRMED;
     }
 
+    public void startRental() {
+        requireStatus(ReservationStatus.CONFIRMED);
+        this.status = ReservationStatus.ACTIVE;
+    }
+
     public void cancel() {
         if (status == ReservationStatus.COMPLETED) {
             throw new IllegalStateException("A completed reservation cannot be cancelled");
@@ -73,14 +85,22 @@ public class Reservation {
         this.status = ReservationStatus.COMPLETED;
     }
 
+    /** True once the payment window has closed without a deposit being paid. */
+    public boolean isPaymentExpired() {
+        return status == ReservationStatus.PENDING
+                && !depositPaid
+                && paymentDeadline != null
+                && LocalDateTime.now().isAfter(paymentDeadline);
+    }
+
+    public void markDepositPaid(String paymentIntentId) {
+        this.depositPaid = true;
+        this.stripePaymentIntentId = paymentIntentId;
+    }
+
     private void requireStatus(ReservationStatus expected) {
         if (this.status != expected) {
             throw new IllegalStateException("Expected status " + expected + " but was " + this.status);
         }
-    }
-
-    public void startRental() {
-        requireStatus(ReservationStatus.CONFIRMED);
-        this.status = ReservationStatus.ACTIVE;
     }
 }

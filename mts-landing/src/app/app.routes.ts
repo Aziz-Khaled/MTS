@@ -16,6 +16,11 @@ import { adminGuard } from './guards/auth.guard.spec';
 import { AdminLayoutComponent } from './pages/admin-layout/admin-layout.component';
 import { AdminReservationsComponent } from './pages/admin/admin-reservations/admin-reservations.component';
 import { AdminMessagesComponent } from './pages/admin/admin-messages/admin-messages.component';
+import { PaymentComponent } from './pages/payment/payment/payment.component';
+import { PaymentSuccessComponent } from './pages/payment/payment-success/payment-success.component';
+
+
+
 
 export const routes: Routes = [
   { path: '', component: LandingComponent, title: 'MTS | Mobility & Transportation Services' },
@@ -40,6 +45,8 @@ export const routes: Routes = [
 
   ],
 },
+{ path: 'payment/success', component: PaymentSuccessComponent, title: 'Payment | MTS' },
+{ path: 'payment/:id', component: PaymentComponent, canActivate: [authGuard], title: 'Payment | MTS' },
   { path: '**', redirectTo: '' },
   
 ];

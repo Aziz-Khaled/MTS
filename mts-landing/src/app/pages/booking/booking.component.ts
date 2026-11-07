@@ -220,8 +220,7 @@ export class BookingComponent implements OnInit {
       .subscribe({
         next: (res) => {
           this.submitting = false;
-          this.submitted = true;
-          this.reservationResult = res;
+          this.router.navigate(['/payment', res.id]);
         },
         error: (err) => {
           this.submitting = false;

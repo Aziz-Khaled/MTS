@@ -1,4 +1,4 @@
-package com.mts.backend.Application;
+package com.mts.backend.Application.Impl;
 
 import com.mts.backend.Application.ContactMessageService;
 import com.mts.backend.Domain.Models.ContactMessage;
